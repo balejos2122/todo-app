@@ -1,5 +1,5 @@
 <script setup>
-import {ref, registerRuntimeCompiler} from 'vue'
+import {ref, onMounted, watch} from 'vue'
 const todos = ref([])
 const name = ref('')
 const input_content = ref('')
@@ -22,6 +22,24 @@ const addTodo = () => {
   // console.log(todos)
 
 }
+
+const removeTodo = (todo) => {
+  todos.value = todos.value.filter(t => t !== todo)
+}
+
+onMounted( () => {
+  name.value = localStorage.getItem('name') || ''
+  todos.value = JSON.parse(localStorage.getItem('todos')) || []
+})
+
+watch(name, (newVal) => {
+  localStorage.setItem('name', newVal)
+}, {deep: true})
+
+watch(name, (newVal) => {
+  localStorage.setItem('todos', JSON.stringify(newVal))
+})
+
 </script>
 
 <template>
@@ -65,7 +83,7 @@ const addTodo = () => {
 
     <section class="todo-list">
       <div class="list">
-        <div v-for="todo in todos" :class="`todo-item ${todo.done ? 'done' : 'not-done'}`" :key="todo">
+        <div v-for="todo in todos.slice().reverse()" :class="`todo-item ${todo.done ? 'done' : 'not-done'}`" :key="todo">
           <label>
             <input type="checkbox" v-model="todo.done" />
             <span :class="`bubble ${todo.category}`"></span>
@@ -73,7 +91,9 @@ const addTodo = () => {
           <div class="todo-content">
             <input type="text" v-model="todo.content" />
           </div>
-        
+          <dive class="actions">
+            <button class="delete" @click="removeTodo(todo)">Delete</button>
+          </dive>
         
         </div>
       </div>
